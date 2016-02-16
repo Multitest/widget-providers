@@ -9,6 +9,7 @@ var options = {
   types: ['geocode'],
   componentRestrictions: {},
 };
+var helpText = 'Введи полный адрес, например: Киев, Николая Бажана просп. 32';
 
 String.prototype.format = function() {
   var formatted = this;
@@ -412,10 +413,9 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
           if (isHouse(results)) {
             document.getElementById('widget-coverage').style.display =
               'block';
+            WIDGET.Dialog.coverage();
           } else {
-            if (error) {
-              alert(helpText);
-            }
+            alert(helpText);
           }
         });
       }
