@@ -24,13 +24,19 @@ function initializeAutocomplete() {
   var autocompleteAddress = new google.maps.places.Autocomplete((document.getElementById(
     'address')), options);
   google.maps.event.addListener(autocompleteAddress, 'place_changed', function() {
-    var place = autocompleteAddress.getPlace();
-    lat = place.geometry.location.lat();
-    lng = place.geometry.location.lng();
-    address = place.formatted_address;
-    document.getElementById('widget-coverage').style.display =
-      'none';
-    WIDGET.Dialog.changeAddress('address');
+    try {
+      var place = autocompleteAddress.getPlace();
+      lat = place.geometry.location.lat();
+      lng = place.geometry.location.lng();
+      address = place.formatted_address;
+      document.getElementById('widget-coverage').style.display =
+        'none';
+      WIDGET.Dialog.changeAddress('address');
+    } catch (e) {
+
+    } finally {
+
+    }
   });
 }
 
@@ -55,7 +61,7 @@ function loadWidget() {
 
   WIDGET.Dialog.show({
     text: [{
-      text: 'Введите полный адрес для проверки покрытия'
+      text: 'Введите полный адрес для проверки покрытия',
     }, {
       text: 'Покрытие есть!',
     }],
@@ -64,7 +70,15 @@ function loadWidget() {
       name: 'address',
       autocomplete: true,
       placeholder: 'например Киев, Николая Бажана просп. 32 и выберите его из выпадающего списка',
-      callback: function() {}
+      className: '',
+      callback: function(e) {
+        var key = e.keyCode || e.which;
+        if (key === 13) {
+          WIDGET.Dialog.changeAddress('address');
+          e.preventDefault();
+        }
+        return false;
+      }
     }],
     buttons: [{
       id: 'widget-coverage',
@@ -173,11 +187,12 @@ WIDGET.DOM = typeof WIDGET.DOM != 'undefined' && WIDGET.DOM ? WIDGET.DOM : {
     parent.appendChild(a);
   },
 
-  addInput: function(className, parent, placeholder, id) {
+  addInput: function(className, parent, placeholder, id, className) {
     var input = document.createElement("input");
     input.type = "text";
     input.id = id;
-    input.placeholder = placeholder
+    input.className = className;
+    input.placeholder = placeholder;
     input.className = className;
     parent.appendChild(input);
     return input;
@@ -263,6 +278,9 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
     }
 
     var isHouse = function(results) {
+      if (results.length == 0) {
+        return false;
+      }
       for (i = 0; i < results[0].address_components.length; i++) {
         for (j = 0; j < results[0].address_components[i].types.length; j++) {
           if (results[0].address_components[i].types[j] == "street_number") {
@@ -294,7 +312,7 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
           options = {
             types: ['geocode'],
             componentRestrictions: {
-              //country: country
+              country: country
             },
           };
           var multitestWidget = document.createElement('div');
@@ -333,8 +351,8 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
           multitestStepFrom.id = 'multitest--check--address';
           multitestStep.appendChild(multitestStepFrom);
           WIDGET.DOM.addInput('', multitestStepFrom, o.inputs[0]
-            .placeholder, o.inputs[0].id);
-
+            .placeholder, o.inputs[0].id, o.inputs[0].className);
+          activateListeners(o.inputs, 'keypress');
 
           var multitestStepCoverage = document.createElement('div');
           multitestStepCoverage.className =
@@ -353,7 +371,7 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
           WIDGET.DOM.addLink(o.buttons[2].className,
             multitestStepCoverageBtn, o.buttons[
               2]
-            .text, o.buttons[2].id, true);
+            .text, o.buttons[2].id, false);
 
           WIDGET.DOM.addCloseButton(WIDGET.DOM.addLink(o.buttons[1].className,
             multitestWidget, o.buttons[1]
@@ -396,12 +414,16 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
         document.getElementById('widget-coverage').style.display =
           'none';
 
+        address = document.getElementById('address');
+        address.className = "loading";
+
         loadJSON("{0}?lat={1}&lng={2}".format(pathAPI, lat, lng),
           function(data) {
             document.getElementById('step-main').className =
               'multitest--step multitest--hideit';
             document.getElementById('step-coverage').className =
               'multitest--step multitest--hideit multitest--step--check ';
+            address.className = "";
           });
       },
       changeAddress: function(result) {
