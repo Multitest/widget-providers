@@ -84,7 +84,7 @@ iframe {
 }
 .multitest--widget .multitest--step--check form#multitest--check--address {
   margin: 10px auto 4px;
-  max-width: 80%;
+  width: 90%;
   height: 32px;
   line-height: 32px;
   font-size: 14px;
@@ -283,6 +283,12 @@ iframe {
     font-size: 15px !important;
     height: 40px !important;
     line-height: 40px !important;
+    max-width: 60%; !important;
+  }
+}
+@media screen and (min-width: 1600px) {
+  .multitest--step--check form#multitest--check--address {
+    max-width: 45%; !important;
   }
 }
 .pac-container {
