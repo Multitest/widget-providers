@@ -5,9 +5,11 @@ var pathAPI =
 var urlGooglePlaces =
   'https://maps.googleapis.com/maps/api/js?callback=initializeAutocomplete&libraries=places';
 var ipApi = 'http://ip-api.com/json';
-var options = {
+var autocompleteOptions = {
   types: ['geocode'],
-  componentRestrictions: {},
+  componentRestrictions: {
+    country: autocompleteCountyRestriction
+  },
 };
 var helpText = 'Введи полный адрес, например: Киев, Николая Бажана просп. 32';
 
@@ -22,7 +24,7 @@ String.prototype.format = function() {
 
 function initializeAutocomplete() {
   var autocompleteAddress = new google.maps.places.Autocomplete((document.getElementById(
-    'address')), options);
+    'address')), autocompleteOptions);
   google.maps.event.addListener(autocompleteAddress, 'place_changed', function() {
     try {
       var place = autocompleteAddress.getPlace();
@@ -306,15 +308,6 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
         function(data) {
           lat = data.lat;
           lng = data.lon;
-          if (data.countryCode) {
-            country = data.countryCode
-          }
-          options = {
-            types: ['geocode'],
-            componentRestrictions: {
-              country: country
-            },
-          };
           var multitestWidget = document.createElement('div');
           multitestWidget.className =
             'multitest--widget activate--mt multitest--with--map';
@@ -424,6 +417,14 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
             document.getElementById('step-coverage').className =
               'multitest--step multitest--hideit multitest--step--check ';
             address.className = "";
+
+            for (var i = 0; i < data.length; i++) {
+              var ispData = data[i];
+              console.log(ispData.id, ispIdArr);
+              if(ispIdArr.indexOf(ispData.id) != -1) return; //found coverage
+            }  
+            //please rewrite to comply with code style   
+            document.querySelectorAll(".multitest--title")[1].innerHTML = "Покрытия нет :(";
           });
       },
       changeAddress: function(result) {
