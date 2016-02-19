@@ -66,6 +66,8 @@ function loadWidget() {
       text: 'Введите полный адрес для проверки покрытия',
     }, {
       text: 'Покрытие есть!',
+    }, {
+      text: 'Покрытия нет :(',
     }],
     inputs: [{
       id: 'address',
@@ -356,6 +358,16 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
             o.text[1].text,
             'div');
 
+          var multitestStepCoverage = document.createElement('div');
+          multitestStepCoverage.className =
+            'multitest--step multitest--hideit';
+          multitestStepCoverage.id = 'step-coverage-empty';
+          multitestContainer.appendChild(multitestStepCoverage);
+          WIDGET.DOM.addText('multitest--title', multitestStepCoverage,
+            o.text[2].text,
+            'div');
+
+
           var multitestStepCoverageBtn = document.createElement('div');
           multitestStepCoverageBtn.className = 'multitest--btns';
 
@@ -412,19 +424,25 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
 
         loadJSON("{0}?lat={1}&lng={2}".format(pathAPI, lat, lng),
           function(data) {
-            document.getElementById('step-main').className =
-              'multitest--step multitest--hideit';
-            document.getElementById('step-coverage').className =
-              'multitest--step multitest--hideit multitest--step--check ';
-            address.className = "";
-
             for (var i = 0; i < data.length; i++) {
               var ispData = data[i];
-              console.log(ispData.id, ispIdArr);
-              if(ispIdArr.indexOf(ispData.id) != -1) return; //found coverage
-            }  
-            //please rewrite to comply with code style   
-            document.querySelectorAll(".multitest--title")[1].innerHTML = "Покрытия нет :(";
+              if (ispIdArr.indexOf(ispData.id) != -1) {
+                document.getElementById('step-main').className =
+                  'multitest--step multitest--hideit';
+                document.getElementById('step-coverage').className =
+                  'multitest--step multitest--hideit multitest--step--check ';
+                document.getElementById('step-coverage-empty').className =
+                  'multitest--step multitest--hideit';
+                address.className = "";
+              }
+            }
+            document.getElementById('step-coverage').className =
+              'multitest--step multitest--hideit';
+            document.getElementById('step-main').className =
+              'multitest--step multitest--hideit';
+            document.getElementById('step-coverage-empty').className =
+              'multitest--step multitest--hideit multitest--step--check ';
+            address.className = "";
           });
       },
       changeAddress: function(result) {
