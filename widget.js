@@ -58,6 +58,7 @@ function loadWidget() {
     link.href = 'css/widget-provider.css';
     (document.getElementsByTagName('head')[0] || document.getElementsByTagName(
       'body')[0]).appendChild(link);
+    WIDGET.Dialog.block();
   }
   setTimeout(runWidget, 1000);
 
@@ -110,6 +111,8 @@ function loadWidget() {
       }
     }],
   });
+
+  WIDGET.Dialog.hide();
 }
 
 window.onload = loadWidget;
@@ -383,7 +386,6 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
             .text, o.buttons[1]
             .id, true));
           activateListeners(o.buttons, 'click');
-          dialog.style.display = 'block';
         });
     };
 
@@ -405,6 +407,9 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
     return {
       show: function(o) {
         render(o);
+      },
+      block: function(o) {
+        dialog.style.display = 'block';
       },
       hide: function() {
         dialog.style.display = 'none';
