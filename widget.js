@@ -1,7 +1,7 @@
 var lat, lng;
 var address = '';
 var pathAPI =
-  'http://www.multitest.ua/api/v1/providers/provider-full/for_location/'
+  'http://www.multitest.ru/api/v1/providers/provider-full/for_location/'
 var urlGooglePlaces =
   'https://maps.googleapis.com/maps/api/js?callback=initializeAutocomplete&libraries=places';
 var ipApi = 'http://ip-api.com/json';
@@ -55,7 +55,7 @@ function loadWidget() {
     link.rel = 'stylesheet';
     link.type = 'text/css';
     link.media = 'all';
-    link.href = 'css/widget-provider.css';
+    link.href = '/static/widget-provider/css/widget-provider.css';
     (document.getElementsByTagName('head')[0] || document.getElementsByTagName(
       'body')[0]).appendChild(link);
     WIDGET.Dialog.block();
@@ -69,6 +69,8 @@ function loadWidget() {
       text: 'Покрытие есть!',
     }, {
       text: 'Покрытия нет :(',
+    }, {
+      text: 'Упс, ошибка на сервере. Попробуйте еще раз через некоторое время',
     }],
     inputs: [{
       id: 'address',
@@ -274,8 +276,15 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
             if (success)
               success(JSON.parse(xhr.responseText));
           } else {
-            if (error)
-              error(xhr);
+            document.getElementById('step-coverage').className =
+              'multitest--step multitest--hideit';
+            document.getElementById('step-main').className =
+              'multitest--step multitest--hideit';
+            document.getElementById('step-coverage-empty').className =
+              'multitest--step multitest--hideit';
+            document.getElementById('step-error').className =
+              'multitest--step multitest--hideit multitest--step--check ';
+            address.className = "";
           }
         }
       };
@@ -314,8 +323,9 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
           lat = data.lat;
           lng = data.lon;
           var multitestWidget = document.createElement('div');
+          multitestWidget.id = 'content-widget';
           multitestWidget.className =
-            'multitest--widget activate--mt multitest--with--map';
+            'activate--normal multitest--widget activate--mt multitest--with--map';
           dialog.appendChild(multitestWidget);
 
           var multitestBackdrop = document.createElement('div');
@@ -370,6 +380,14 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
             o.text[2].text,
             'div');
 
+          var multitestStepError = document.createElement('div');
+          multitestStepError.className =
+            'multitest--step multitest--hideit';
+          multitestStepError.id = 'step-error';
+          multitestContainer.appendChild(multitestStepError);
+          WIDGET.DOM.addText('multitest--title', multitestStepError,
+            o.text[3].text,
+            'div');
 
           var multitestStepCoverageBtn = document.createElement('div');
           multitestStepCoverageBtn.className = 'multitest--btns';
@@ -386,8 +404,18 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
             .text, o.buttons[1]
             .id, true));
           activateListeners(o.buttons, 'click');
+
+          focusAddress();
         });
     };
+
+    var focusAddress = function() {
+      WIDGET.DOM.addListener('address', 'click', function() {
+        document.getElementById('content-widget').className =
+          'activate--focus multitest--widget activate--mt multitest--with--map';
+        return false;
+      });
+    }
 
     var activateListeners = function(tag, type) {
 
@@ -427,7 +455,8 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
         address = document.getElementById('address');
         address.className = "loading";
 
-        loadJSON("{0}?lat={1}&lng={2}".format(pathAPI, lat, lng),
+        loadJSON("{0}?lat={1}&lng={2}&suggestion_request={3}".format(pathAPI,
+            lat, lng, address.value),
           function(data) {
             for (var i = 0; i < data.length; i++) {
               var ispData = data[i];

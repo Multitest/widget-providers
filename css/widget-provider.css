@@ -92,7 +92,7 @@ iframe {
 .multitest--widget .multitest--step--check input {
   height: inherit;
   line-height: inherit;
-  padding: 0 25px;
+  padding: 0 30px;
   box-sizing: border-box;
   margin: 0;
   font-size: inherit;
@@ -115,8 +115,13 @@ iframe {
   z-index: 5001;
   opacity: 0;
 }
-.multitest--widget.activate--mt {
+.activate--mt {
+}
+.activate--focus {
   height: 100%;
+}
+.activate--normal {
+  height: 170px;
 }
 .multitest--widget.activate--mt .multitest--backdrop {
   opacity: .6;
@@ -145,7 +150,6 @@ iframe {
 }
 .multitest--widget.multitest--with--map .multitest--map--box {
   width: 100%;
-  height: 100%;
   top: 100px;
   opacity: 1;
 }
@@ -276,7 +280,7 @@ iframe {
     height: 150px;
   }
   .multitest--widget.multitest--with--map .multitest--map--box {
-    top: 150px;
+    top: 100px;
   }
   .multitest--step--check form#multitest--check--address {
     margin: 15px auto 7px !important;
@@ -311,4 +315,12 @@ iframe {
 #step-coverage-empty .multitest--title {
   font-size: 24px;
   padding-top: 30px;
+}
+.multitest--widget.activate--focus .multitest--container {
+  top: 50%;
+  margin-top: -150px;
+}
+.multitest--widget.activate--focus .multitest--close {
+  top: 50%;
+  margin-top: -50px;
 }
