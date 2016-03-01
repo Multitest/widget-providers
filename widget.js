@@ -1,7 +1,7 @@
 var lat, lng;
 var address = '';
-var pathAPI =
-  'http://www.multitest.ru/api/v1/providers/provider-full/for_location/'
+var suggestion_request = ''
+var pathAPI = '/api/v1/providers/provider-full/for_location/'
 var urlGooglePlaces =
   'https://maps.googleapis.com/maps/api/js?callback=initializeAutocomplete&libraries=places';
 var ipApi = 'http://ip-api.com/json';
@@ -30,6 +30,7 @@ function initializeAutocomplete() {
       var place = autocompleteAddress.getPlace();
       lat = place.geometry.location.lat();
       lng = place.geometry.location.lng();
+      suggestion_request = place;
       address = place.formatted_address;
       document.getElementById('widget-coverage').style.display =
         'none';
@@ -455,8 +456,9 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
         address = document.getElementById('address');
         address.className = "loading";
 
-        loadJSON("{0}?lat={1}&lng={2}&suggestion_request={3}".format(pathAPI,
-            lat, lng, address.value),
+        // [FIXED]: suggestion_request=encodeURIComponent(JSON.stringify(suggestion_request))
+        loadJSON("{0}?lat={1}&lng={2}&ids_only=true&format=json".format(pathAPI,
+            lat, lng),
           function(data) {
             for (var i = 0; i < data.length; i++) {
               var ispData = data[i];
