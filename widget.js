@@ -31,12 +31,10 @@ function initializeAutocomplete() {
       lat = place.geometry.location.lat();
       lng = place.geometry.location.lng();
       suggestion_request = place;
-      address = place.formatted_address;
       document.getElementById('widget-coverage').style.display =
-        'none';
+           'none';
       WIDGET.Dialog.changeAddress('address');
     } catch (e) {
-
     } finally {
 
     }
@@ -269,7 +267,7 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
     dialog.style.display = 'none';
     document.getElementById('widget-provider').appendChild(dialog);
 
-    var loadJSON = function(path, success, error) {
+    var loadJSON = function(path, method, body, success, error) {
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -289,8 +287,13 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
           }
         }
       };
-      xhr.open("GET", path, true);
-      xhr.send();
+      xhr.open(method, path, true);
+      if (method == 'POST') {
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send(body);
+      } else {
+        xhr.send();
+      }
       return true;
     }
 
@@ -319,7 +322,9 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
 
     var render = function(o) {
       var html = '';
-      loadJSON(ipApi,
+      var method = 'GET';
+      var body = {};
+      loadJSON(ipApi, method, body,
         function(data) {
           lat = data.lat;
           lng = data.lon;
@@ -455,31 +460,47 @@ WIDGET.Dialog = typeof WIDGET.Dialog != 'undefined' && WIDGET.Dialog ? WIDGET.Di
 
         address = document.getElementById('address');
         address.className = "loading";
-
-        // [FIXED]: suggestion_request=encodeURIComponent(JSON.stringify(suggestion_request))
-        loadJSON("{0}?lat={1}&lng={2}&ids_only=true&format=json".format(pathAPI,
-            lat, lng),
-          function(data) {
-            for (var i = 0; i < data.length; i++) {
-              var ispData = data[i];
-              if (ispIdArr.indexOf(ispData.id) != -1) {
-                document.getElementById('step-main').className =
-                  'multitest--step multitest--hideit';
-                document.getElementById('step-coverage').className =
-                  'multitest--step multitest--hideit multitest--step--check ';
-                document.getElementById('step-coverage-empty').className =
-                  'multitest--step multitest--hideit';
-                address.className = "";
-              }
+        if (suggestion_request) {
+          var method = 'POST';
+          data = suggestion_request;
+          var body = {
+            "original_query": document.getElementById('address').value,
+            "place": data,
+            "prediction":{
+              "terms":[
+                {
+                  "value": document.getElementById('address').value,
+                  "offset": 0
+                }
+              ]
             }
-            document.getElementById('step-coverage').className =
-              'multitest--step multitest--hideit';
-            document.getElementById('step-main').className =
-              'multitest--step multitest--hideit';
-            document.getElementById('step-coverage-empty').className =
-              'multitest--step multitest--hideit multitest--step--check ';
-            address.className = "";
-          });
+          }
+          var body = 'suggestion_request=' + encodeURIComponent(JSON.stringify(body));
+          loadJSON("{0}?lat={1}&lng={2}&ids_only=true&format=json".format(pathAPI,
+              lat, lng), method, body,
+            function(data) {
+              for (var i = 0; i < data.length; i++) {
+                var ispData = data[i];
+                if (ispIdArr.indexOf(ispData.id) != -1) {
+                  document.getElementById('step-main').className =
+                    'multitest--step multitest--hideit';
+                  document.getElementById('step-coverage').className =
+                    'multitest--step multitest--hideit multitest--step--check ';
+                  document.getElementById('step-coverage-empty').className =
+                    'multitest--step multitest--hideit';
+                  address.className = "";
+                }
+              }
+              document.getElementById('step-coverage').className =
+                'multitest--step multitest--hideit';
+              document.getElementById('step-main').className =
+                'multitest--step multitest--hideit';
+              document.getElementById('step-coverage-empty').className =
+                'multitest--step multitest--hideit multitest--step--check ';
+              address.className = "";
+            });
+
+        }
       },
       changeAddress: function(result) {
         var address = document.getElementById('address').value;
